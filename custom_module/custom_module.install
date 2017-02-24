@@ -1,0 +1,25 @@
+<?php
+/**
+ * @file
+ * Custom module installation
+ */
+
+/**
+ * Implements hook_install().
+ */
+function custom_module_install() {
+  // Set default variable
+  variable_set('repeater', '');
+  $t = get_t();
+  drupal_set_message($t('custom module variables created.'));
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function custom_module_uninstall() {
+  // Delete persistent variable
+  variable_del('repeater');
+  $t = get_t();
+  drupal_set_message($t('custom module variables removed.'));
+}

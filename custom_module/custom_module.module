@@ -1,0 +1,156 @@
+<?php
+
+/**
+ * This module implements "add more" and 'remove one' AJAX buttons using
+ * drupal form api. It saves the form data with the function
+ * system_settings_form() to persistent variable-repeater and pre-populate the form
+ * with whatever has already been saved.
+ * It also demostrate how to create a configuration form where administer can
+ * adjust the settings
+ */
+
+
+/**
+ * Implements hook_help().
+ */
+function custom_module_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#custom_module':{
+      $ret_val = '<h3>' . t('About') . '</h3>';
+      $ret_val = '<p>' . t('This is custom module helper text') . '</p>';
+      return $ret_val;
+      break;
+    }
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function custom_module_menu() {
+  $items = array();
+
+  // Admin configuration group.
+  $items['admin/config/custom_module'] = array(
+    'title' => 'Custom Module',
+    'description' => 'Administer custom module',
+    'access arguments' => array('access administration pages'),
+  );
+
+  // Admin configuration - settings.
+  $items['admin/config/custom_module/manage'] = array(
+    'title' => 'Custom Module settings',
+    'description' => 'Manage custom module configurations.',
+    'access arguments' => array('access administration pages'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('custom_module_admin_settings_form'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form().
+ */
+function custom_module_admin_settings_form($node, &$form_state) {
+
+  $form['repeater'] = array(
+      '#type' => 'fieldset',
+      '#tree' => TRUE,
+      '#title' => t('Repeater form'),
+      '#prefix' => '<div id="repeater-wrapper">',
+      "#suffix" => '</div>'
+  );
+
+  //retrieve the persistent variable-repeater from what has been saved previously
+  $vars = variable_get('repeater');
+
+  if(empty($form_state['num']) && count($vars)==0) {
+      $form_state['num'] = 1;
+  }else{
+    if(!isset($form_state['num'])) {
+       $form_state['num']=count($vars);
+     }
+  }
+
+  for ($i = 0; $i < $form_state['num']; $i++) {
+      $form['repeater'][$i] = array(
+        '#prefix' => '<div class="container-inline">',
+        '#suffix' => '</div>',
+        '#tree' => TRUE,
+      );
+      $form['repeater'][$i]['name'] = array(
+          '#type' => 'textfield',
+          '#title' => 'Name',
+          '#size' => 20,
+          '#default_value' => isset($vars[$i]['name']) ? $vars[$i]['name'] : '',
+          '#description' => t('')
+      );
+      $form['repeater'][$i]['text'] = array(
+          '#type' => 'textfield',
+          '#title' => 'Text',
+          '#size' => 40,
+          '#default_value' => isset($vars[$i]['text']) ? $vars[$i]['text'] : '',
+          '#description' => t('')
+      );
+
+  }
+
+  $form['repeater']['add_more'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add more'),
+      '#submit' => array('_add_more_button'),
+      '#ajax' => array(
+          'callback' => '_add_more_callback',
+          'wrapper' => 'repeater-wrapper'
+      )
+  );
+
+ if($form_state['num'] > 1) {
+    $form['repeater'][$i]['remove_one'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove One'),
+        '#submit' => array('_remove_one_button'),
+        '#ajax' => array(
+            'callback' => '_remove_one_callback',
+            'wrapper' => 'repeater-wrapper',
+        )
+    );
+  }
+ //custom submit function runs before the system_settings_form() submit handler
+  $form['#submit'][] = 'custom_admin_settings_form_submit';
+  $form = system_settings_form($form);
+
+  return $form;
+
+}
+//custom submit function to remove empty values
+function custom_admin_settings_form_submit($form, &$form_state){
+   $i=0;
+   foreach($form_state['values']['repeater'] as $value){
+     if(empty($value['name']) && empty($value['text'])){
+       unset($form_state['values']['repeater'][$i]);
+     }
+     $i++;
+   }
+}
+
+function _remove_one_button($form, &$form_state){
+  if($form_state['num'] > 1) {
+    $form_state['num']--;
+  }
+  $form_state['rebuild'] = TRUE;
+}
+
+function _remove_one_callback($form, $form_state) {
+    return $form['repeater'];
+}
+
+function _add_more_button($form, &$form_state){
+  $form_state['num']++;
+  $form_state['rebuild'] = TRUE;
+}
+
+function _add_more_callback($form, $form_state) {
+    return $form['repeater'];
+}
