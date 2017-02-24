@@ -9,7 +9,7 @@
  */
 function custom_module_install() {
   // Set default variable
-  variable_set('repeater', '');
+  variable_set('contact', '');
   $t = get_t();
   drupal_set_message($t('custom module variables created.'));
 }
@@ -19,7 +19,7 @@ function custom_module_install() {
  */
 function custom_module_uninstall() {
   // Delete persistent variable
-  variable_del('repeater');
+  variable_del('contact');
   $t = get_t();
   drupal_set_message($t('custom module variables removed.'));
 }

@@ -54,16 +54,16 @@ function custom_module_menu() {
  */
 function custom_module_admin_settings_form($node, &$form_state) {
 
-  $form['repeater'] = array(
+  $form['contact'] = array(
       '#type' => 'fieldset',
       '#tree' => TRUE,
-      '#title' => t('Repeater form'),
-      '#prefix' => '<div id="repeater-wrapper">',
+      '#title' => t('Contact Detail'),
+      '#prefix' => '<div id="contact-wrapper">',
       "#suffix" => '</div>'
   );
 
-  //retrieve the persistent variable-repeater from what has been saved previously
-  $vars = variable_get('repeater');
+  //retrieve the persistent variable from what has been saved previously
+  $vars = variable_get('contact');
 
   if(empty($form_state['num']) && count($vars)==0) {
       $form_state['num'] = 1;
@@ -74,46 +74,46 @@ function custom_module_admin_settings_form($node, &$form_state) {
   }
 
   for ($i = 0; $i < $form_state['num']; $i++) {
-      $form['repeater'][$i] = array(
+      $form['contact'][$i] = array(
         '#prefix' => '<div class="container-inline">',
         '#suffix' => '</div>',
         '#tree' => TRUE,
       );
-      $form['repeater'][$i]['name'] = array(
+      $form['contact'][$i]['name'] = array(
           '#type' => 'textfield',
-          '#title' => 'Name',
+          '#title' => 'Contact Name',
           '#size' => 20,
           '#default_value' => isset($vars[$i]['name']) ? $vars[$i]['name'] : '',
           '#description' => t('')
       );
-      $form['repeater'][$i]['text'] = array(
+      $form['contact'][$i]['email'] = array(
           '#type' => 'textfield',
-          '#title' => 'Text',
+          '#title' => 'Email',
           '#size' => 40,
-          '#default_value' => isset($vars[$i]['text']) ? $vars[$i]['text'] : '',
+          '#default_value' => isset($vars[$i]['email']) ? $vars[$i]['email'] : '',
           '#description' => t('')
       );
 
   }
 
-  $form['repeater']['add_more'] = array(
+  $form['contact']['add_more'] = array(
       '#type' => 'submit',
       '#value' => t('Add more'),
       '#submit' => array('_add_more_button'),
       '#ajax' => array(
           'callback' => '_add_more_callback',
-          'wrapper' => 'repeater-wrapper'
+          'wrapper' => 'contact-wrapper'
       )
   );
 
  if($form_state['num'] > 1) {
-    $form['repeater'][$i]['remove_one'] = array(
+    $form['contact'][$i]['remove_one'] = array(
         '#type' => 'submit',
         '#value' => t('Remove One'),
         '#submit' => array('_remove_one_button'),
         '#ajax' => array(
             'callback' => '_remove_one_callback',
-            'wrapper' => 'repeater-wrapper',
+            'wrapper' => 'contact-wrapper',
         )
     );
   }
@@ -127,9 +127,9 @@ function custom_module_admin_settings_form($node, &$form_state) {
 //custom submit function to remove empty values
 function custom_admin_settings_form_submit($form, &$form_state){
    $i=0;
-   foreach($form_state['values']['repeater'] as $value){
-     if(empty($value['name']) && empty($value['text'])){
-       unset($form_state['values']['repeater'][$i]);
+   foreach($form_state['values']['contact'] as $value){
+     if(empty($value['name']) && empty($value['email'])){
+       unset($form_state['values']['contact'][$i]);
      }
      $i++;
    }
@@ -143,7 +143,7 @@ function _remove_one_button($form, &$form_state){
 }
 
 function _remove_one_callback($form, $form_state) {
-    return $form['repeater'];
+    return $form['contact'];
 }
 
 function _add_more_button($form, &$form_state){
@@ -152,5 +152,5 @@ function _add_more_button($form, &$form_state){
 }
 
 function _add_more_callback($form, $form_state) {
-    return $form['repeater'];
+    return $form['contact'];
 }
